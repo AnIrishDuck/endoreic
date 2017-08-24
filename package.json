@@ -1,0 +1,42 @@
+{
+  "name": "tasty",
+  "version": "0.0.1",
+  "description": "built from salt",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --compilers js:babel-register --require babel-polyfill --recursive test",
+    "lint": "eslint lib test"
+  },
+  "author": "Frank Murphy",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-regenerator": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "base64-url": "^2.0.0",
+    "chai": "^4.1.1",
+    "eslint": "^4.5.0",
+    "eslint-config-defaults": "^9.0.0",
+    "eslint-plugin-compat": "^1.0.4",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-react": "^7.2.1",
+    "mocha": "^3.5.0",
+    "sinon": "^3.2.1"
+  },
+  "dependencies": {
+    "axios": "^0.16.2",
+    "immutable": "^3.8.1",
+    "lodash": "^4.17.4",
+    "scrypt-js": "^2.0.3",
+    "tweetnacl": "^1.0.0",
+    "uuid": "^3.1.0"
+  }
+}
