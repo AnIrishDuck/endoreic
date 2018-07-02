@@ -1,6 +1,4 @@
 import { expect } from 'chai'
-import immutable from 'immutable'
-import _ from 'lodash'
 import sqlite3 from 'sqlite3'
 import uuid from 'uuid'
 
@@ -14,6 +12,15 @@ describe('Table', () => {
     { uuid: uuid.v4(), ix: "0", abc: "10", def: "20" },
     { uuid: uuid.v4(), ix: "1", ghi: "10" },
   ]
+
+  const expectAssertionFail = async (f, message) => {
+    try {
+      await f()
+      expect(false).to.equal(true)
+    } catch(e) {
+      expect(e.message).to.equal(message)
+    }
+  }
 
   describe('create()', () => {
     it('inserts query-able key / value pairs', async () => {
@@ -33,13 +40,47 @@ describe('Table', () => {
 
     it('requires the uuid field', async () => {
       const table = await mem()
+      return expectAssertionFail(
+        () => table.create([noId]),
+        'All objects must have a UUID'
+      )
+    })
+  })
 
-      try {
-        await table.create([noId])
-        expect(false)
-      } catch(e) {
-        expect(e.message).to.equal('All objects must have a UUID')
-      }
+  describe('update()', () => {
+    it('modifies fields in previously stored objects', async () => {
+      const table = await mem()
+
+      await table.create(examples)
+      const up = { abc: "20" }
+      await table.update([examples[0].uuid], up)
+
+      expect(await table.query(' ORDER BY ix')).to.deep.equal([
+        { ...examples[0], ...up }, examples[1]
+      ])
+    })
+
+    it('can create a new field', async () => {
+      const table = await mem()
+
+      await table.create(examples)
+      const up = { brandNew: "20" }
+      await table.update([examples[1].uuid], up)
+
+      expect(await table.query(' ORDER BY ix')).to.deep.equal([
+        examples[0], { ...examples[1], ...up }
+      ])
+    })
+
+    it('cannot change uuids', async () => {
+      const table = await mem()
+
+      await table.create(examples)
+      const up = { a: 20, uuid: uuid.v4(), b: 30 }
+      expectAssertionFail(
+        () => table.update([examples[1]], up),
+        'UUIDs are immutable'
+      )
     })
   })
 })
