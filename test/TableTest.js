@@ -101,4 +101,17 @@ describe('Table', () => {
       )
     })
   })
+
+  describe('remove()', () => {
+    it('removes previously stored objects', async () => {
+      const table = await mem()
+
+      await table.create(examples)
+      await table.remove([examples[0].uuid])
+
+      expect(await table.query()).to.deep.equal([
+        examples[1]
+      ])
+    })
+  })
 })
