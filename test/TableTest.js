@@ -40,9 +40,14 @@ describe('Table', () => {
     it('requires the uuid field', async () => {
       const table = await mem()
       const noId = { ix: '0', abc: '10', def: '20' }
-      return expectAssertionFail(
+      await expectAssertionFail(
         () => table.create([noId]),
-        'All objects must have a UUID'
+        "invalid uuid: 'undefined'"
+      )
+
+      return expectAssertionFail(
+        () => table.create([{ uuid: "wheeeee" }]),
+        "invalid uuid: 'wheeeee'"
       )
     })
 
