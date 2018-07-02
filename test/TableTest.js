@@ -7,7 +7,6 @@ import Table from '../lib/Table'
 describe('Table', () => {
   const mem = () => new Table(new sqlite3.Database(':memory:'), 'example')
 
-  const noId = { ix: 0, abc: 10, def: 20 }
   const examples = [
     { uuid: uuid.v4(), ix: "0", abc: "10", def: "20" },
     { uuid: uuid.v4(), ix: "1", ghi: "10" },
@@ -40,9 +39,19 @@ describe('Table', () => {
 
     it('requires the uuid field', async () => {
       const table = await mem()
+      const noId = { ix: '0', abc: '10', def: '20' }
       return expectAssertionFail(
         () => table.create([noId]),
         'All objects must have a UUID'
+      )
+    })
+
+    it('requires all values to be strings', async () => {
+      const table = await mem()
+      const integer = { uuid: uuid.v4(), ix: 0 }
+      return expectAssertionFail(
+        () => table.create([integer]),
+        'All values must be strings'
       )
     })
   })
@@ -76,10 +85,19 @@ describe('Table', () => {
       const table = await mem()
 
       await table.create(examples)
-      const up = { a: 20, uuid: uuid.v4(), b: 30 }
-      expectAssertionFail(
-        () => table.update([examples[1]], up),
+      const up = { a: '20', uuid: uuid.v4(), b: '30' }
+      return expectAssertionFail(
+        () => table.update([examples[1].uuid], up),
         'UUIDs are immutable'
+      )
+    })
+
+    it('requires all values to be strings', async () => {
+      const table = await mem()
+      const integer = { ix: 0 }
+      return expectAssertionFail(
+        () => table.update([uuid.v4()], integer),
+        'All values must be strings'
       )
     })
   })
