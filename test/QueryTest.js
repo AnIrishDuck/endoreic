@@ -6,7 +6,10 @@ import Query from '../lib/Query'
 import Table from '../lib/Table'
 
 describe('Query', () => {
-  const mem = () => new Table(new sqlite3.Database(':memory:'), 'example')
+  const mem = () => {
+    const db = new sqlite3.Database(':memory:')
+    return {db, table: new Table(db, 'example') }
+  }
 
   const examples = [
     { uuid: uuid.v4(), ix: "0", abc: "10", def: "20" },
@@ -14,10 +17,14 @@ describe('Query', () => {
     { uuid: uuid.v4(), ix: "2", abc: "10", ghi: "12" },
   ]
 
-  const expectQuery = async (query, values) => {
-    const table = await mem()
+  const expectQuery = (query, values) => {
+    return expectTableQuery('example', query, values)
+  }
+
+  const expectTableQuery = async (tables, query, values) => {
+    const { db, table } = mem()
     await table.create(examples)
-    const rows = query(new Query(table))
+    const rows = query(new Query(db, tables))
     expect(await rows.toArray()).to.deep.equal(values)
   }
 
@@ -97,6 +104,17 @@ describe('Query', () => {
           .order('def ASC')
           .select('ghi'),
       [examples[2], examples[1]].map((e) => _.pick(e, ['ghi']))
+    )
+  })
+
+  it('can join table(s)', async () => {
+    await expectTableQuery(
+      { a: 'example', b: 'example' },
+      (query) =>
+        query.where('a.abc = b.abc')
+          .select('CAST(a.ix as INTEGER) AS ix')
+          .order('a.ix DESC'),
+      [2, 2, 0, 0].map((ix) => ({ ix }))
     )
   })
 })
