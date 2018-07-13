@@ -63,6 +63,15 @@ describe('Query', () => {
     })
   })
 
+  describe('select()', () => {
+    it('can be used to retrieve expressions', async () => {
+      await expectQuery(
+        (query) => query.order('ix').select('CAST(ix AS INTEGER) AS ix'),
+        examples.map(({ ix }) => ({ ix: parseInt(ix) }))
+      )
+    })
+  })
+
   it('can chain multiple where / order clauses', async () => {
     await expectQuery(
       (query) =>
@@ -79,6 +88,15 @@ describe('Query', () => {
           .order('ix DESC')
           .order('def ASC'),
       [examples[2], examples[1]]
+    )
+    await expectQuery(
+      (query) =>
+        query.where('CAST(COALESCE(abc, "0") AS INTEGER) > ?', [-1])
+          .where('CAST(ix AS INTEGER) > ?', [0])
+          .order('ix DESC')
+          .order('def ASC')
+          .select('ghi'),
+      [examples[2], examples[1]].map((e) => _.pick(e, ['ghi']))
     )
   })
 })
