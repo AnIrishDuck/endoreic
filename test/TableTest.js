@@ -3,6 +3,7 @@ import sqlite3 from 'sqlite3'
 import uuid from 'uuid'
 
 import Table from '../lib/Table'
+import { expectRejection } from './util'
 
 describe('Table', () => {
   const mem = () => new Table(new sqlite3.Database(':memory:'), 'example')
@@ -11,15 +12,6 @@ describe('Table', () => {
     { uuid: uuid.v4(), ix: "0", abc: "10", def: "20" },
     { uuid: uuid.v4(), ix: "1", ghi: "10" },
   ]
-
-  const expectAssertionFail = async (f, message) => {
-    try {
-      await f()
-      expect(false).to.equal(true)
-    } catch(e) {
-      expect(e.message).to.equal(message)
-    }
-  }
 
   describe('create()', () => {
     it('inserts query-able key / value pairs', async () => {
@@ -40,13 +32,13 @@ describe('Table', () => {
     it('requires the uuid field', async () => {
       const table = await mem()
       const noId = { ix: '0', abc: '10', def: '20' }
-      await expectAssertionFail(
-        () => table.create([noId]),
+      await expectRejection(
+        table.create([noId]),
         "invalid uuid: 'undefined'"
       )
 
-      return expectAssertionFail(
-        () => table.create([{ uuid: "wheeeee" }]),
+      return expectRejection(
+        table.create([{ uuid: "wheeeee" }]),
         "invalid uuid: 'wheeeee'"
       )
     })
@@ -54,8 +46,8 @@ describe('Table', () => {
     it('requires all values to be strings', async () => {
       const table = await mem()
       const integer = { uuid: uuid.v4(), ix: 0 }
-      return expectAssertionFail(
-        () => table.create([integer]),
+      return expectRejection(
+        table.create([integer]),
         'All values must be strings'
       )
     })
@@ -91,8 +83,8 @@ describe('Table', () => {
 
       await table.create(examples)
       const up = { a: '20', uuid: uuid.v4(), b: '30' }
-      return expectAssertionFail(
-        () => table.update([examples[1].uuid], up),
+      return expectRejection(
+        table.update([examples[1].uuid], up),
         'UUIDs are immutable'
       )
     })
@@ -100,8 +92,8 @@ describe('Table', () => {
     it('requires all values to be strings', async () => {
       const table = await mem()
       const integer = { ix: 0 }
-      return expectAssertionFail(
-        () => table.update([uuid.v4()], integer),
+      return expectRejection(
+        table.update([uuid.v4()], integer),
         'All values must be strings'
       )
     })
