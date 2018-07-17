@@ -1,16 +1,6 @@
 import { expect } from 'chai'
-import Model from '../lib/Model'
-import { isIn } from '../lib/validate'
-
 import { expectRejection } from './util'
-
-class Example extends Model {
-  static kind = 'examples'
-  static create = Model.create(Example)
-  static validate = Model.validate(Example, {
-    key: isIn(['a', 'b'])
-  })
-}
+import Example from './fixtures/Example'
 
 describe('Model', () => {
   it('validates on creation', async () => {
