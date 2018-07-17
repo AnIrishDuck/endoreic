@@ -1,5 +1,6 @@
 import Promise from 'bluebird'
 import { expect } from 'chai'
+import _ from 'lodash'
 import sqlite3 from 'sqlite3'
 import uuid from 'uuid'
 
@@ -42,6 +43,22 @@ const validateStack = (stack, final) => {
     const acts = await serialize(store)
     await Promise.reduce(acts, (_acc, act) => act.apply(store), null)
     expect(await keys(store)).to.deep.equal(final)
+  })
+
+  it('can be unapplied', async () => {
+    const store = await memStore()
+    const acts = await serialize(store)
+    const states = await Promise.reduce(acts, async (prior, act) => {
+      await act.apply(store)
+      return [await keys(store), ...prior]
+    }, [])
+
+    const pairs = _.zip(_.reverse(acts), states)
+    await Promise.reduce(pairs, async (prior, [act, state]) => {
+      expect(await keys(store)).to.deep.equal(state)
+      await act.remove(store)
+    }, null)
+    expect(await keys(store)).to.deep.equal([])
   })
 }
 
