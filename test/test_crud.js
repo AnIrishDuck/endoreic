@@ -35,14 +35,14 @@ const validateStack = (stack, final) => {
     return await Promise.all(rebuilt)
   }
 
-  const keys = async (store) =>
-    store.examples.order('ix').toArray().then((arr) => arr.map((m) => m.key))
+  const rows = async (store) =>
+    store.examples.order('ix').toArray().then((arr) => arr)
 
   it('can be applied', async () => {
     const store = await memStore()
     const acts = await serialize(store)
     await Promise.reduce(acts, (_acc, act) => act.apply(store), null)
-    expect(await keys(store)).to.deep.equal(final)
+    expect(await rows(store)).to.deep.equal(final)
   })
 
   it('can be unapplied', async () => {
@@ -50,28 +50,30 @@ const validateStack = (stack, final) => {
     const acts = await serialize(store)
     const states = await Promise.reduce(acts, async (prior, act) => {
       await act.apply(store)
-      return [await keys(store), ...prior]
+      return [await rows(store), ...prior]
     }, [])
 
     const pairs = _.zip(_.reverse(acts), states)
     await Promise.reduce(pairs, async (prior, [act, state]) => {
-      expect(await keys(store)).to.deep.equal(state)
+      expect(await rows(store)).to.deep.equal(state)
       await act.remove(store)
     }, null)
-    expect(await keys(store)).to.deep.equal([])
+    expect(await rows(store)).to.deep.equal([])
   })
 }
 
 describe('crud actions', () => {
-  describe('can be used to create models', () => {
-    const raw = [
-      [add, [{ ix: '0', key: 'a', uuid: uuid.v4() }]],
-      [add, [{ ix: '1', key: 'b', uuid: uuid.v4() }]],
-      [add, [{ ix: '2', key: 'a', uuid: uuid.v4() }]],
-      [add, [{ ix: '3', key: 'a', uuid: uuid.v4() }]],
-      [add, [{ ix: '4', key: 'b', uuid: uuid.v4() }]],
+  describe('with a stack of create data', () => {
+    const objects = [
+      { ix: '0', key: 'a' },
+      { ix: '1', key: 'b' },
+      { ix: '2', key: 'a' },
+      { ix: '3', key: 'a' },
+      { ix: '4', key: 'b' }
     ]
+    const raw = objects.map((o) => ({ ...o, uuid: uuid.v4() }))
+    const acts = _.chunk(raw, 2).map((chunk) => [add, chunk])
 
-    validateStack(raw, ['a', 'b', 'a', 'a', 'b'])
+    validateStack(acts, raw)
   })
 })
