@@ -70,7 +70,7 @@ describe('crud actions', () => {
       { ix: '3', key: 'a' },
       { ix: '4', key: 'b' }
     ]
-    const raw = objects.map((o) => ({ ...o, uuid: uuid.v4() }))
+    const raw = objects.map((o) => ({ ...o, id: uuid.v4() }))
     const acts = _.chunk(raw, 2).map((chunk) => [add, chunk])
 
     validateStack(acts, raw)
@@ -82,8 +82,8 @@ describe('crud actions', () => {
       { ix: '1', key: 'b' },
       { ix: '2', key: 'a' },
     ]
-    const raw = objects.map((o) => ({ ...o, uuid: uuid.v4() }))
-    const uuids = raw.map((o) => o.uuid)
+    const raw = objects.map((o) => ({ ...o, id: uuid.v4() }))
+    const ids = raw.map((o) => o.id)
     const updates = [
       { ixs: [1], up: { ix: '0', key: 'a' } },
       { ixs: [0, 1], up: { key: 'b' } },
@@ -97,7 +97,7 @@ describe('crud actions', () => {
       ...updates.map(
         ({ ixs, up }) => [
           update, {
-            uuids: ixs.map((ix) => uuids[ix]),
+            ids: ixs.map((ix) => ids[ix]),
             update: up
           }
         ]
