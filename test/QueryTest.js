@@ -12,9 +12,9 @@ describe('Query', () => {
   }
 
   const examples = [
-    { uuid: uuid.v4(), ix: "0", abc: "10", def: "20" },
-    { uuid: uuid.v4(), ix: "1", ghi: "10" },
-    { uuid: uuid.v4(), ix: "2", abc: "10", ghi: "12" },
+    { id: uuid.v4(), ix: "0", abc: "10", def: "20" },
+    { id: uuid.v4(), ix: "1", ghi: "10" },
+    { id: uuid.v4(), ix: "2", abc: "10", ghi: "12" },
   ]
 
   const expectQuery = (query, values) => {
