@@ -9,10 +9,7 @@ import Query from '../lib/Query'
 import Table from '../lib/Table'
 import Example from './fixtures/Example'
 
-const {
-  ['examples.add']: add,
-  ['examples.update']: update,
-} = actions(Example)
+const { create, update } = actions(Example)
 
 const validateStack = (stack, unordered) => {
   const final = _.sortBy(unordered, (o) => [o.ix])
@@ -71,7 +68,7 @@ describe('crud actions', () => {
       { ix: '4', key: 'b' }
     ]
     const raw = objects.map((o) => ({ ...o, id: uuid.v4() }))
-    const acts = _.chunk(raw, 2).map((chunk) => [add, chunk])
+    const acts = _.chunk(raw, 2).map((chunk) => [create, chunk])
 
     validateStack(acts, raw)
   })
@@ -93,7 +90,7 @@ describe('crud actions', () => {
     ]
 
     const acts = [
-      ...raw.map((start) => [add, [start]]),
+      ...raw.map((start) => [create, [start]]),
       ...updates.map(
         ({ ixs, up }) => [
           update, {
