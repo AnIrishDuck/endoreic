@@ -1,13 +1,23 @@
 import { expect } from 'chai'
 import sqlite3 from 'sqlite3'
+import { BoxKeyPair, SecretKey } from '../lib/crypto'
 import { expectRejection } from './util'
 import Keymaster from './fixtures/Keymaster'
 
 describe('Store', () => {
   const db = () => new sqlite3.Database(':memory:')
 
+  const write = new BoxKeyPair()
+  const keyring = {
+    id: write.publicKey(),
+    read: new SecretKey(),
+    write
+  }
+
+  const master = () => new Keymaster(db(), null, keyring)
+
   it('can be used to create / update / query models and children', async () => {
-    const keymaster = await new Keymaster(db(), null)
+    const keymaster = master()
     const [ parent ] = await keymaster.groups.create([
       { name: 'All Passwords' }
     ])
@@ -28,5 +38,15 @@ describe('Store', () => {
 
     const [ other ] = await parent.passwords().fetch()
     expect(other.id).to.equal(password.id)
+  })
+
+  it('persists actions in the stream cache', async () => {
+    const keymaster = master()
+
+    await keymaster.groups.create([{ name: 'Some Passwords' }])
+    await keymaster.groups.create([{ name: 'Secret Stuff' }])
+    await keymaster.groups.create([{ name: 'Work Passwords' }])
+
+    expect(await keymaster.stream.size(true)).to.equal(3)
   })
 })
