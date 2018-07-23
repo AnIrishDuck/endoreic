@@ -7,7 +7,7 @@ export default class Password extends Model {
   static transform = {
     parent: {
       toString: (value) => value.fetch().then((g) => g.id),
-      toValue: (string, store) => store.groups.ref(string)
+      toValue: (string, store) => Promise.resolve(store.groups.reference(string))
     }
   }
   static prepare = Model.prepare(Password)

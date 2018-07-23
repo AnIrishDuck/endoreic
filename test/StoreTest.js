@@ -39,7 +39,10 @@ describe('Store', () => {
     )
     expect(updated.length).to.equal(1)
 
-    expect((await password.fetch()).name).to.equal('Updated Example')
+    const data = await password.fetch()
+    const parentData = await data.parent.fetch()
+    expect(data.name).to.equal('Updated Example')
+    expect(parentData.name).to.equal('All Passwords')
 
     const [ other ] = await parent.passwords().fetch()
     expect(other.id).to.equal(password.id)
