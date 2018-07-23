@@ -87,5 +87,24 @@ describe('Store', () => {
       const groups = await k2.groups.select('id').toArray()
       expect(groups.length).to.equal(3)
     })
+
+    it('converges to a consistent state', async () => {
+      const server = new Server()
+      const k1 = master(server)
+      const k2 = master(server)
+
+      const [ group1 ] = await k1.groups.create([{ name: 'Some Passwords' }])
+      const group2 = await k2.groups.reference(group1.id)
+      await k1.sync()
+      await k2.sync()
+      await k1.groups.update([group1.id], { name: 'First' })
+      await k2.groups.update([group1.id], { name: 'Second' })
+
+      await k1.sync()
+      await k2.sync()
+      await k1.sync()
+
+      expect((await group1.fetch()).name).to.equal((await group2.fetch()).name)
+    })
   })
 })
