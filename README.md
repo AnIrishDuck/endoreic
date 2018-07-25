@@ -6,8 +6,8 @@ cryptographic operations. Inspired by ActiveRecord, Redux,
 and the [event sourcing][1] architectural pattern. Designed to be used inside
 React applications.
 
-1. https://martinfowler.com/eaaDev/EventSourcing.html
-2. https://tweetnacl.js.org/
+[1]: https://martinfowler.com/eaaDev/EventSourcing.html
+[2]: https://tweetnacl.js.org/
 
 # Architecture
 
