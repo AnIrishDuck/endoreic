@@ -19,7 +19,7 @@ We do not roll our own crypto. All cryptographic operations are done using
 Key derivation is performed using `scrypt` with [sensible parameters][2]
 
 [1]: lib/crypto.js
-[2]: lib/crypto.js:27
+[2]: lib/crypto.js#L27
 
 ## Server Interactions
 
