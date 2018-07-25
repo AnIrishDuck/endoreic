@@ -1,4 +1,4 @@
-import * as crud from '../../lib/crud'
+import * as cru from '../../lib/cru'
 import Model from '../../lib/Model'
 import { isType } from '../../lib/validate'
 
@@ -8,7 +8,7 @@ export default class Group extends Model {
   static validate = Model.validate(Group, {
     name: isType('string'),
   })
-  static actions = crud.actions(Group)
+  static actions = cru.actions(Group)
 
   passwords () {
     return this.store.passwords.where({ parent: this.id })

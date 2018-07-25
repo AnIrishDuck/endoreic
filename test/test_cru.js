@@ -4,7 +4,7 @@ import _ from 'lodash'
 import sqlite3 from 'sqlite3'
 import uuid from 'uuid'
 
-import { actions } from '../lib/crud'
+import { actions } from '../lib/cru'
 import Query from '../lib/Query'
 import Table from '../lib/Table'
 import Example from './fixtures/Example'

@@ -1,4 +1,4 @@
-import * as crud from '../../lib/crud'
+import * as cru from '../../lib/cru'
 import Model from '../../lib/Model'
 import { isType, isUUID } from '../../lib/validate'
 
@@ -16,5 +16,5 @@ export default class Password extends Model {
     name: isType('string'),
     password: isType('string')
   })
-  static actions = crud.actions(Password)
+  static actions = cru.actions(Password)
 }
