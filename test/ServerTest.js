@@ -6,8 +6,8 @@ import { expect } from 'chai'
 import sinon from 'sinon'
 import uuid from 'uuid'
 
-import Server from '../lib/Server'
-import { authToken, encode, BoxKeyPair, SecretKey } from '../lib/crypto'
+import Server, { authToken } from '../lib/Server'
+import { BoxKeyPair, SecretKey } from '../lib/crypto'
 
 let k = new SecretKey()
 let plaintext = new Buffer('super secret'.repeat(4))
