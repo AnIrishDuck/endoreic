@@ -63,7 +63,7 @@ stores. We will make this functionality as limited as possible so that any
 downstream applications that use data sharing can also be audited.  
 
 [3]: https://github.com/bitcoinjs/bip39/
-[4]: lib/crypto.js:27
+[4]: lib/crypto.js#L27
 [5]: lib/user.js
 
 ## Metadata Analysis
