@@ -26,7 +26,7 @@ const validateStack = (stack, unordered) => {
   }
 
   const serialize = async (store, [Action, simple]) => {
-    const initial = await Action.builder(store)(simple)
+    const initial = await Action.build(store, simple)
     return new Action(JSON.parse(JSON.stringify(initial)))
   }
 
@@ -39,6 +39,16 @@ const validateStack = (stack, unordered) => {
       serialize(store, act).then((_act) => _act.apply(store))
     ), null)
     expect(await rows(store)).to.deep.equal(final)
+  })
+
+  it('has no errors', async () => {
+    const store = await memStore()
+    const errors = await Promise.reduce(stack, async (prior, act) => {
+      const cereal = await serialize(store, act)
+      await cereal.apply(store)
+      return [...prior, ...(await cereal.errors(store))]
+    }, [])
+    expect(errors).to.deep.equal([])
   })
 
   it('can be unapplied', async () => {

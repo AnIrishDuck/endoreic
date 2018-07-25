@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { expectRejection } from './util'
 import Example from './fixtures/Example'
 
-describe('Model', () => {
+describe.skip('Model', () => {
   it('validates on creation', async () => {
     const valid = await Example.create(null, { key: 'b' })
     expect(valid.key).to.equal('b')

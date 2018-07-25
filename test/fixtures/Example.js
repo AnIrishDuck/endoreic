@@ -3,9 +3,9 @@ import { isIn, isType, optional } from '../../lib/validate'
 
 export default class Example extends Model {
   static kind = 'examples'
-  static create = Model.create(Example)
+  static prepare = Model.prepare(Example)
   static validate = Model.validate(Example, {
-    ix: optional(isType('number')),
+    ix: optional(isType('string')),
     key: isIn(['a', 'b'])
   })
 }
