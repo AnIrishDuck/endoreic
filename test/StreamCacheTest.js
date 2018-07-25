@@ -1,7 +1,6 @@
 import assert from 'assert'
 import { expect } from 'chai'
 import _ from 'lodash'
-import * as most from 'most'
 import sqlite3 from 'sqlite3'
 import uuid from 'uuid'
 

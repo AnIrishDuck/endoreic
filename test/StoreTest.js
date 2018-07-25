@@ -3,7 +3,6 @@ import _ from 'lodash'
 import sqlite3 from 'sqlite3'
 import { BoxKeyPair, SecretKey } from '../lib/crypto'
 import { Server } from './fakes'
-import { expectRejection } from './util'
 import Keymaster from './fixtures/Keymaster'
 
 describe('Store', () => {

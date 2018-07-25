@@ -1,7 +1,6 @@
 /* eslint-env node, mocha */
 import { expect } from 'chai'
 import sqlite3 from 'sqlite3'
-import uuid from 'uuid'
 
 import User from '../lib/User'
 import { Server } from './fakes'
