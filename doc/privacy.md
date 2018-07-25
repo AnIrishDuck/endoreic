@@ -44,13 +44,13 @@ documentation comment describing what data is being sent.
 
 ## Key Derivation
 
-We strongly recommend using a library like [bip39][1] to derive the root
-password. We take this root password, and [run it through scrypt][2] to derive
+We strongly recommend using a library like [bip39][3] to derive the root
+password. We take this root password, and [run it through scrypt][4] to derive
 the root `SecretBox` keypair.
 
 From here, we generate "access keys" for individual applications, encrypt those
 with the root password, and send them to the cloud. Those "access keys" are
-[used][3] to encrypt "store keys" which are also sent to the cloud.
+[used][5] to encrypt "store keys" which are also sent to the cloud.
 
 The "store keys" are what encrypt the action / blob data sent to the server.
 
@@ -62,9 +62,9 @@ other users. This will require creation / sharing of access keys for the data
 stores. We will make this functionality as limited as possible so that any
 downstream applications that use data sharing can also be audited.  
 
-[1]: https://github.com/bitcoinjs/bip39/
-[2]: lib/crypto.js:27
-[3]: lib/user.js
+[3]: https://github.com/bitcoinjs/bip39/
+[4]: lib/crypto.js:27
+[5]: lib/user.js
 
 ## Metadata Analysis
 
