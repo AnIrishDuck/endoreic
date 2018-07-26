@@ -115,6 +115,8 @@ describe('Store', () => {
       await k2.sync()
       await k1.groups.update([group1.id], { name: 'First' })
       await k2.groups.update([group1.id], { name: 'Second' })
+      await k2.groups.update([group1.id], { name: 'Third' })
+      await k2.groups.update([group1.id], { name: 'Fourth' })
 
       await k1.sync()
       await k2.sync()
