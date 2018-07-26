@@ -11,19 +11,19 @@ import Example from './fixtures/Example'
 
 const { create, update } = actions(Example)
 
+const memStore = async () => {
+  const db = new sqlite3.Database(':memory:')
+  const table = new Table(db, Example.kind)
+  return {
+    table: (Model) => {
+      expect(Model.kind).to.equal(Example.kind)
+      return table
+    },
+    [Example.kind]: new Query(db, Example.kind)
+  }
+}
 const validateStack = (stack, unordered) => {
   const final = _.sortBy(unordered, (o) => [o.ix])
-  const memStore = async () => {
-    const db = new sqlite3.Database(':memory:')
-    const table = new Table(db, Example.kind)
-    return {
-      table: (Model) => {
-        expect(Model.kind).to.equal(Example.kind)
-        return table
-      },
-      [Example.kind]: new Query(db, Example.kind)
-    }
-  }
 
   const serialize = async (store, [Action, simple]) => {
     const initial = await Action.build(store, simple)
@@ -68,7 +68,7 @@ const validateStack = (stack, unordered) => {
   })
 }
 
-describe('crud actions', () => {
+describe('cru actions', () => {
   describe('with a stack of create data', () => {
     const objects = [
       { ix: '0', key: 'a' },
@@ -119,5 +119,37 @@ describe('crud actions', () => {
     }, raw)
 
     validateStack(acts, final)
+  })
+
+  describe('on a rebase', () => {
+    it('create.rebase() does nothing', async () => {
+      const store = await memStore()
+      const original = { ix: '0', key: 'a' }
+      const pending = await create.build(store, [original])
+      const rebased = await pending.rebase(store)
+      expect(rebased.objects.map((o) => _.omit(o, 'id')))
+        .to.deep.equal([original])
+    })
+
+    it('update.rebase() changes diff as needed', async () => {
+      const store = await memStore()
+      const original = { ix: '0', key: 'a' }
+      const apply = (a) => a.apply(store)
+      const [ id ] = await create.build(store, [original]).then(apply)
+      const pending = await update.build(store, { ids: [id], update: { ix: '2' } })
+      expect(_.pick(pending, ['ids', 'priors', 'update'])).to.deep.equal({
+        ids: [id],
+        priors: [{ ix: '0' }],
+        update: { ix: '2' }
+      })
+
+      await update.build(store, { ids: [id], update: { ix: '1' } }).then(apply)
+      const rebased = await pending.rebase(store)
+      expect(_.pick(rebased, ['ids', 'priors', 'update'])).to.deep.equal({
+        ids: [id],
+        priors: [{ ix: '1' }],
+        update: { ix: '2' }
+      })
+    })
   })
 })
