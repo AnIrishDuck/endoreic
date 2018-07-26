@@ -1,24 +1,35 @@
+import Promise from 'bluebird'
 import { expect } from 'chai'
-import _ from 'lodash'
-import sqlite3 from 'sqlite3'
-import { BoxKeyPair, SecretKey } from '../lib/crypto'
 import { Server } from './fakes'
+import { memoryStore } from './fixtures'
 import Keymaster from './fixtures/Keymaster'
 
 describe('Store', () => {
-  const db = () => new sqlite3.Database(':memory:')
+  const master = memoryStore(Keymaster)
 
-  const owner = new BoxKeyPair()
-  const write = new BoxKeyPair()
-  const keyring = {
-    id: write.publicKey(),
-    owner,
-    read: new SecretKey(),
-    write
+  const fullState = async (store) => ({
+    groups: await store.groups.toArray(),
+    passwords: await store.passwords.toArray()
+  })
+
+  const testRewindReplay = async (store) => {
+    const reversed = (pending) =>
+      store.stream.reverse(pending).reduce(Array.concat, [])
+    const stack = [...(await reversed(true)), ...(await reversed(false))]
+    const states = await Promise.reduce(stack, async (states, blob) => {
+      const act = await store.parse(blob)
+      const prior = await fullState(store)
+      await act.remove(store)
+      return [[act, prior], ...states]
+    }, [])
+
+    expect(await fullState(store)).to.deep.equal({ groups: [], passwords: [] })
+
+    await Promise.reduce(states, async (_acc, [act, state]) => {
+      await act.apply(store)
+      expect(await fullState(store)).to.deep.equal(state)
+    }, null)
   }
-
-  const master = (server) =>
-    new Keymaster(db(), _.isUndefined(server) ? new Server() : server, keyring)
 
   it('can be used to create / update / query models and children', async () => {
     const keymaster = master()
@@ -45,6 +56,8 @@ describe('Store', () => {
 
     const [ other ] = await parent.passwords().fetch()
     expect(other.id).to.equal(password.id)
+
+    await testRewindReplay(keymaster)
   })
 
   it('persists actions in the stream cache', async () => {
@@ -55,6 +68,7 @@ describe('Store', () => {
     await keymaster.groups.create([{ name: 'Work Passwords' }])
 
     expect(await keymaster.stream.size(true)).to.equal(3)
+    await testRewindReplay(keymaster)
   })
 
   describe('.sync()', () => {
@@ -69,6 +83,7 @@ describe('Store', () => {
 
       expect(await keymaster.serverIndex()).to.equal(3)
       expect(await keymaster.stream.size(true)).to.equal(0)
+      await testRewindReplay(keymaster)
     })
 
     it('merges actions from server', async () => {
@@ -85,6 +100,8 @@ describe('Store', () => {
 
       const groups = await k2.groups.select('id').toArray()
       expect(groups.length).to.equal(3)
+      await testRewindReplay(k1)
+      await testRewindReplay(k2)
     })
 
     it('converges to a consistent state', async () => {
@@ -104,6 +121,8 @@ describe('Store', () => {
       await k1.sync()
 
       expect((await group1.fetch()).name).to.equal((await group2.fetch()).name)
+      await testRewindReplay(k1)
+      await testRewindReplay(k2)
     })
   })
 })

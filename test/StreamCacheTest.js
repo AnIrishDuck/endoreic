@@ -90,6 +90,35 @@ describe('StreamCache', () => {
       .catch((err) => expect(err.message).to.equal('Cannot shift beyond size'))
   })
 
+  it('can update pending blocks while iterating over them', async () => {
+    const stream = await memStream()
+    await stream.pushAll(true, blobs(['1', '2', '3', '4', '5']))
+
+    await stream.forward(true, true).map(([blob, swap]) => {
+      if (blob.toString() === '3') {
+        return swap(new Buffer('X'))
+      } else {
+        return Promise.resolve()
+      }
+    }).awaitPromises().observe(_.noop)
+
+    await expectValues(stream, true, ['1', '2', 'X', '4', '5'])
+  })
+
+  it('cannot update saved blocks', async () => {
+    const stream = await memStream()
+    await stream.pushAll(true, blobs(['1', '2', '3', '4', '5']))
+
+    try {
+      await stream.reverse(false, true).map(([blob, swap]) => {
+        return swap(new Buffer('X' + blob.toString()))
+      }).awaitPromises().observe(),
+      expect(true).to.equal(false)
+    } catch (e) {
+      expect(e.message).to.equal('updates can only occur on pending data')
+    }
+  })
+
   it('can insert blocks after the sync point', async () => {
     const stream = await memStream()
     await stream.pushAll(false, blobs(['A', 'B', 'C']))
