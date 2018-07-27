@@ -8,7 +8,7 @@ export const key = new BoxKeyPair('LbV-X7nAoyRiFq3IsCo8A2rGMCo-F85jYfb5GFU3NSA')
 export class Server {
   constructor () {
     this.seqs = {}
-    this.meta = {}
+    this.keyPairs = {}
   }
 
   putEntry (name, partition, index, data, { auth }) {
@@ -46,5 +46,9 @@ export class Server {
     })
 
     return Promise.all(entries)
+  }
+
+  getKey (email) {
+    return this.keyPairs[email]
   }
 }
