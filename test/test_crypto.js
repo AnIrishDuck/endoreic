@@ -1,6 +1,7 @@
 /* eslint-env node, mocha */
 
 import assert from 'assert'
+import bip39 from 'bip39'
 import { expect } from 'chai'
 import { BoxKeyPair, SecretKey } from '../lib/crypto'
 
@@ -33,6 +34,14 @@ describe('BoxKeyPair', () => {
     const recreated = await BoxKeyPair.fromLogin(email, password)
     const plain = recreated.decrypt(alice.publicKey(), cipher)
     expect(plain.toString()).to.equal(message.toString())
+    BoxKeyPair.rounds = prior
+  })
+
+  it('can derive a key from a bip39 passphrase', async () => {
+    const password = bip39.generateMnemonic()
+    const prior = BoxKeyPair.rounds
+    BoxKeyPair.rounds = 2
+    await BoxKeyPair.fromLogin('alice@test.com', password)
     BoxKeyPair.rounds = prior
   })
 })
