@@ -56,4 +56,54 @@ describe('User', () => {
 
     BoxKeyPair.rounds = prior
   })
+
+  it('can change keys for new users', async () => {
+    const prior = BoxKeyPair.rounds
+    BoxKeyPair.rounds = 2
+    const server = new Server()
+    const email = 'testing@test.com'
+    const key = await BoxKeyPair.fromLogin(email, '')
+
+    server.keyPairs[email] = key.publicKey()
+
+    await User.create(server, email, 'too many secrets')
+
+    const newKey = await BoxKeyPair.fromLogin(email, 'too many secrets')
+    expect(server.keyPairs[email]).to.equal(newKey.publicKey())
+
+    BoxKeyPair.rounds = prior
+  })
+
+  it('can use the same password multiple times after a reset', async () => {
+    const prior = BoxKeyPair.rounds
+    BoxKeyPair.rounds = 2
+
+    const email = 'testing@test.com'
+    const password = 'too many secrets'
+    const login = await User.login(email, password)
+    const init = async () => {
+      const user = new User(db(), server, login)
+      await user.getStore(Keymaster)
+    }
+
+    const server = new Server()
+    const empty = await BoxKeyPair.fromLogin(email, '')
+
+    server.keyPairs[email] = empty.publicKey()
+
+    await User.create(server, email, password)
+    await init()
+
+    await server.removeEntry(login.publicKey, Keymaster.shard, 0)
+
+    server.keyPairs[email] = empty.publicKey()
+
+    await User.create(server, email, password)
+    await init()
+
+    expect(server.keyPairs[email]).to.equal(login.publicKey)
+    expect(await server.getIndex(login.publicKey, Keymaster.shard)).to.equal(2)
+
+    BoxKeyPair.rounds = prior
+  })
 })

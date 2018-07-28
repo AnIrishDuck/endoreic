@@ -1,7 +1,8 @@
 import assert from 'assert'
 import _ from 'lodash'
 
-import { checkToken, decode, BoxKeyPair } from '../lib/crypto'
+import { decode, BoxKeyPair } from '../lib/crypto'
+import { checkToken } from '../lib/Server'
 
 export const key = new BoxKeyPair('LbV-X7nAoyRiFq3IsCo8A2rGMCo-F85jYfb5GFU3NSA')
 
@@ -36,7 +37,13 @@ export class Server {
 
   getEntry (name, partition, index) {
     let prior = this.seqs[`${name}=${partition}`] || []
-    return Promise.resolve(prior[index])
+    if (prior[index] === undefined) {
+      let err = new Error()
+      err.response = { status: 404 }
+      return Promise.reject(err)
+    } else {
+      return Promise.resolve(prior[index])
+    }
   }
 
   async getAll (name, partition) {
@@ -46,6 +53,11 @@ export class Server {
     })
 
     return Promise.all(entries)
+  }
+
+  async removeEntry (name, partition, index) {
+    let prior = this.seqs[`${name}=${partition}`] || []
+    prior[index] = undefined
   }
 
   getKey (email) {
