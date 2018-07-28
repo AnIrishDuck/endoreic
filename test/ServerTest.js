@@ -5,7 +5,7 @@ import axios from 'axios'
 import { expect } from 'chai'
 import sinon from 'sinon'
 
-import Server, { authToken } from '../lib/Server'
+import Server, { authToken, authTokens, checkToken } from '../lib/Server'
 import { BoxKeyPair, SecretKey } from '../lib/crypto'
 
 let k = new SecretKey()
@@ -74,6 +74,17 @@ const testCache = (entries) => ({
     entries[id] = value
     return Promise.resolve(value)
   },
+})
+
+describe('Server crypto', () => {
+  it('can verify writes', () => {
+    const user = new BoxKeyPair()
+    const resource = new BoxKeyPair()
+
+    const { auth, owner, ownerAuth } = authTokens(resource, user)
+    expect(checkToken(resource.publicKey(), auth)).to.be.true
+    expect(checkToken(owner, ownerAuth)).to.be.true
+  })
 })
 
 describe('Server cache', () => {

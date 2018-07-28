@@ -1,7 +1,7 @@
 import assert from 'assert'
 import _ from 'lodash'
 
-import { decode, BoxKeyPair } from '../lib/crypto'
+import { checkToken, decode, BoxKeyPair } from '../lib/crypto'
 
 export const key = new BoxKeyPair('LbV-X7nAoyRiFq3IsCo8A2rGMCo-F85jYfb5GFU3NSA')
 
@@ -49,6 +49,18 @@ export class Server {
   }
 
   getKey (email) {
-    return this.keyPairs[email]
+    const kp = this.keyPairs[email]
+    const err = { response: { status: 404 } }
+    return _.isUndefined(kp) ? Promise.reject(err) : Promise.resolve(kp)
+  }
+
+  putKey (email, publicKey, tokens) {
+    const prior = this.keyPairs[email]
+
+    assert(prior === tokens.owner)
+    assert(checkToken(prior, tokens.ownerAuth))
+
+    this.keyPairs[email] = publicKey
+    return Promise.resolve()
   }
 }
