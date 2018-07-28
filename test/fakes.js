@@ -3,6 +3,7 @@ import _ from 'lodash'
 
 import { decode, BoxKeyPair } from '../lib/crypto'
 import { checkToken } from '../lib/Server'
+import User from '../lib/User'
 
 export const key = new BoxKeyPair('LbV-X7nAoyRiFq3IsCo8A2rGMCo-F85jYfb5GFU3NSA')
 
@@ -58,6 +59,12 @@ export class Server {
   async removeEntry (name, partition, index) {
     let prior = this.seqs[`${name}=${partition}`] || []
     prior[index] = undefined
+  }
+
+  initUser (email) {
+    return User.fromLogin(email, '').then(
+      (kp) => this.keyPairs[email] = kp.publicKey()
+    )
   }
 
   getKey (email) {

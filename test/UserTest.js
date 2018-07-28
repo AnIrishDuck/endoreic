@@ -62,9 +62,7 @@ describe('User', () => {
     BoxKeyPair.rounds = 2
     const server = new Server()
     const email = 'testing@test.com'
-    const key = await BoxKeyPair.fromLogin(email, '')
-
-    server.keyPairs[email] = key.publicKey()
+    await server.initUser(email)
 
     await User.create(server, email, 'too many secrets')
 
