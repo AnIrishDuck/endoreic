@@ -91,6 +91,11 @@ describe('Store', () => {
       const k1 = master(server)
       const k2 = master(server)
 
+      const collect = (stream) =>
+        stream.map((index) => [ index ]).reduce(Array.concat, [])
+      const changes1 = collect(k1.changes().take(3))
+      const changes2 = collect(k2.changes().take(2))
+
       await k1.groups.create([{ name: 'Some Passwords' }])
       await k1.groups.create([{ name: 'Secret Stuff' }])
       await k2.groups.create([{ name: 'Work Passwords' }])
@@ -100,6 +105,10 @@ describe('Store', () => {
 
       const groups = await k2.groups.select('id').toArray()
       expect(groups.length).to.equal(3)
+
+      expect(await changes1).to.deep.equal([[0, 1], [0, 2], [2, 0]])
+      expect(await changes2).to.deep.equal([[0, 1], [3, 0]])
+
       await testRewindReplay(k1)
       await testRewindReplay(k2)
     })
