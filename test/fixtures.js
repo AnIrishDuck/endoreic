@@ -2,7 +2,7 @@ import _ from 'lodash'
 import sqlite3 from 'sqlite3'
 import { BoxKeyPair, SecretKey } from '../lib/crypto'
 import User from '../lib/User'
-import { Server } from './fakes'
+import { FakeServer } from '../lib/fakes'
 
 let _cachedLogin = null
 export const login = async () => {
@@ -31,5 +31,5 @@ export const memoryStore = (Store) => {
   }
 
   return (server) =>
-    new Store(db(), _.isUndefined(server) ? new Server() : server, keyring)
+    new Store(db(), _.isUndefined(server) ? new FakeServer() : server, keyring)
 }

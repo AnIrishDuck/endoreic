@@ -1,6 +1,6 @@
 import Promise from 'bluebird'
 import { expect } from 'chai'
-import { Server } from './fakes'
+import { FakeServer } from '../lib/fakes'
 import { memoryStore } from './fixtures'
 import Keymaster from './fixtures/Keymaster'
 
@@ -94,7 +94,7 @@ describe('Store', () => {
     })
 
     it('merges actions from server', async () => {
-      const server = new Server()
+      const server = new FakeServer()
       const k1 = master(server)
       const k2 = master(server)
 
@@ -121,7 +121,7 @@ describe('Store', () => {
     })
 
     it('converges to a consistent state', async () => {
-      const server = new Server()
+      const server = new FakeServer()
       const k1 = master(server)
       const k2 = master(server)
 
