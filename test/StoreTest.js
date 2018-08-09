@@ -71,6 +71,13 @@ describe('Store', () => {
     await testRewindReplay(keymaster)
   })
 
+  it('notifies of changes when full state sync has happened', async () => {
+    const keymaster = master(null)
+    keymaster.groups.create([{ name: 'Some Passwords' }])
+    await keymaster.changes().take(1).drain()
+    expect((await keymaster.groups.fetch()).length).to.equal(1)
+  })
+
   describe('.sync()', () => {
     it('moves actions from the pending stream cache to the server', async () => {
       const keymaster = master()
