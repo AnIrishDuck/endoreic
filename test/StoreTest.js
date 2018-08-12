@@ -79,6 +79,32 @@ describe('Store', () => {
   })
 
   describe('.sync()', () => {
+    it('does not call onChange if nothing has happened', async () => {
+      const server = new Server()
+      let counts = { k1: 0, k2: 0 }
+      const k1 = master(server)
+      const k2 = master(server)
+      k1.changes().observe(() => counts.k1 = counts.k1 + 1)
+      k2.changes().observe(() => counts.k2 = counts.k2 + 1)
+
+      const change = (store) => store.changes().take(1).drain()
+      await Promise.all([
+        change(k1),
+        k1.groups.create([{ name: 'Some Passwords' }])
+      ])
+      expect(counts.k1).to.equal(1)
+      await Promise.all([k1.sync(), change(k1)])
+      expect(counts.k1).to.equal(2)
+      await Promise.all([k2.sync(), change(k2)])
+      expect(counts.k2).to.equal(1)
+      await k1.sync()
+      await k2.sync()
+      await k1.sync()
+      await k2.sync()
+      expect(counts.k1).to.equal(2)
+      expect(counts.k2).to.equal(1)
+    })
+
     it('moves actions from the pending stream cache to the server', async () => {
       const keymaster = master()
 
