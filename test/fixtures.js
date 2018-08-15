@@ -24,5 +24,5 @@ export const memoryStore = (Store) => {
   const ring = keyring()
 
   return (server) =>
-    new Store(db(), _.isUndefined(server) ? new Server() : server, ring)
+    Store.create(db(), _.isUndefined(server) ? new Server() : server, ring)
 }

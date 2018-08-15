@@ -31,8 +31,14 @@ describe('Store', () => {
     }, null)
   }
 
+  it('can be used immediately', async () => {
+    const keymaster = await master()
+    const blank = await keymaster.passwords.where({ name: 'foo' }).fetch()
+    expect(blank).to.deep.equal([])
+  })
+
   it('can be used to create / update / query models and children', async () => {
-    const keymaster = master()
+    const keymaster = await master()
     const [ parent ] = await keymaster.groups.create([
       { name: 'All Passwords' }
     ])
@@ -61,7 +67,7 @@ describe('Store', () => {
   })
 
   it('persists actions in the stream cache', async () => {
-    const keymaster = master(null)
+    const keymaster = await master(null)
 
     await keymaster.groups.create([{ name: 'Some Passwords' }])
     await keymaster.groups.create([{ name: 'Secret Stuff' }])
@@ -72,7 +78,7 @@ describe('Store', () => {
   })
 
   it('notifies of changes when full state sync has happened', async () => {
-    const keymaster = master(null)
+    const keymaster = await master(null)
     keymaster.groups.create([{ name: 'Some Passwords' }])
     await keymaster.changes().take(1).drain()
     expect((await keymaster.groups.fetch()).length).to.equal(1)
@@ -82,8 +88,8 @@ describe('Store', () => {
     it('does not call onChange if nothing has happened', async () => {
       const server = new Server()
       let counts = { k1: 0, k2: 0 }
-      const k1 = master(server)
-      const k2 = master(server)
+      const k1 = await master(server)
+      const k2 = await master(server)
       k1.changes().observe(() => counts.k1 = counts.k1 + 1)
       k2.changes().observe(() => counts.k2 = counts.k2 + 1)
 
@@ -106,7 +112,7 @@ describe('Store', () => {
     })
 
     it('moves actions from the pending stream cache to the server', async () => {
-      const keymaster = master()
+      const keymaster = await master()
 
       await keymaster.groups.create([{ name: 'Some Passwords' }])
       await keymaster.groups.create([{ name: 'Secret Stuff' }])
@@ -121,8 +127,8 @@ describe('Store', () => {
 
     it('merges actions from server', async () => {
       const server = new Server()
-      const k1 = master(server)
-      const k2 = master(server)
+      const k1 = await master(server)
+      const k2 = await master(server)
 
       const collect = (stream) =>
         stream.map((index) => [ index ]).reduce(Array.concat, [])
@@ -148,8 +154,8 @@ describe('Store', () => {
 
     it('converges to a consistent state', async () => {
       const server = new Server()
-      const k1 = master(server)
-      const k2 = master(server)
+      const k1 = await master(server)
+      const k2 = await master(server)
 
       const [ group1 ] = await k1.groups.create([{ name: 'Some Passwords' }])
       const group2 = await k2.groups.reference(group1.id)
