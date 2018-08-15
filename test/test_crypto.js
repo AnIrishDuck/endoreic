@@ -36,6 +36,14 @@ describe('BoxKeyPair', () => {
     assert.equal(message.toString(), plain.toString())
   })
 
+  it('generates different key pairs automatically', () => {
+    const a = new BoxKeyPair()
+    const b = new BoxKeyPair()
+
+    const cipher = a.encrypt(a.publicKey(), 'super secret')
+    expect(() => b.decrypt(a.publicKey(), cipher)).to.throw('Invalid key')
+  })
+
   it('can derive a reusable key from email / password', async () => {
     const email = 'bob@test.com'
     const password = 'too many secrets'
@@ -75,5 +83,13 @@ describe('SecretKey', () => {
     let plaintext = fromServer.decrypt(ciphertext)
 
     assert.equal(message.toString(), plaintext.toString())
+  })
+
+  it('generates different key pairs automatically', () => {
+    const a = new SecretKey()
+    const b = new SecretKey()
+
+    const cipher = a.encrypt('super secret')
+    expect(() => b.decrypt(cipher)).to.throw('Invalid key')
   })
 })
