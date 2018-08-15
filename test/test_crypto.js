@@ -2,8 +2,25 @@
 
 import assert from 'assert'
 import bip39 from 'bip39'
+import _ from 'lodash'
+import sinon from 'sinon'
 import { expect } from 'chai'
-import { BoxKeyPair, SecretKey } from '../lib/crypto'
+import nacl from 'tweetnacl'
+import { BoxKeyPair, SecretKey, encode } from '../lib/crypto'
+
+let pairs = {}
+const noRepeats = (old) => (data, nonce, pk, sk) => {
+  const n = encode(nonce)
+  const d = encode(data)
+  if (!_.isUndefined(pairs[n])) {
+    assert(pairs[n] === d)
+  } else {
+    pairs[n] = d
+  }
+  return old(data, nonce, pk, sk)
+}
+sinon.replace(nacl.box, 'open', noRepeats(nacl.box.open))
+sinon.replace(nacl.secretbox, 'open', noRepeats(nacl.secretbox.open))
 
 describe('BoxKeyPair', () => {
   let message = new Buffer('always money in the banana stand')
