@@ -1,7 +1,7 @@
 {
   "name": "endoreic",
-  "version": "0.1.0",
-  "description": "a data caching, synchronization, and persistence library",
+  "version": "0.2.0",
+  "description": "a data encryption, caching, synchronization, and persistence library",
   "main": "dist/exports",
   "directories": {
     "lib": "./dist",
