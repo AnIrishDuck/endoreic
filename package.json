@@ -1,5 +1,5 @@
 {
-  "name": "endoreic",
+  "name": "@talaria/endoreic",
   "version": "0.2.0",
   "description": "a data encryption, caching, synchronization, and persistence library",
   "main": "dist/exports",
