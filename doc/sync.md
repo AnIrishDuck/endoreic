@@ -47,7 +47,7 @@ exist, their actions should not conflict.
 ## Acts on Extant Objects
 
 The last-write-win policy can cause some potential weirdness, that increases as
-the application grows in complexity. Complex might fail. "Dirty writes"
+the application grows in complexity. Complex actions might fail. "Dirty writes"
 can happen.
 
 At some point, this library will support "rebasing" actions to handle these
