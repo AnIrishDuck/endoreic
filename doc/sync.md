@@ -8,7 +8,9 @@ eventual persistence.
 As a result, when a client reconnects, synchronization must happen. For
 immutable data blobs, synchronization is easy. For action streams, we currently
 employ a last-write-wins policy on updates. Deletes can be simulated using a
-["tombstone"][1] similar to other distributed systems like Cassandra.
+["tombstone"] similar to other distributed systems like Cassandra.
+
+The normal operation of synchronization on each client looks like this:
 
 - a batch of new actions is fetched
 - if no actions were fetched, we attempt to persist a batch of pending actions
@@ -17,13 +19,15 @@ employ a last-write-wins policy on updates. Deletes can be simulated using a
   - the new actions are applied
   - all pending actions are applied in order
   - all persisted pending actions are resolved
-- we pause before looping:
-  - if a network failure happened above, a longer timeout (5s) is used
-  - if no actions were fetched or persisted, a very long timeout (60s) is used,
-    with a wake-up override for new actions from the client.
-  - if any activity happened, no timeout occurs and we loop back immediately
 
-1. https://docs.datastax.com/en/cassandra/3.0/cassandra/dml/dmlAboutDeletes.html
+We recommend pausing before calling sync() again:
+  - if a network failure happened above, a longer timeout (5s) should be used
+  - if no actions were fetched or persisted, a very long timeout (60s) should be
+    used, with a wake-up override for new actions from the client.
+  - if any new actions were downloaded, no timeout should occurs and sync()
+    should be called again immediately.
+
+["tombstone"]: https://docs.datastax.com/en/cassandra/3.0/cassandra/dml/dmlAboutDeletes.html
 
 # Conflicts
 
