@@ -31,7 +31,7 @@ const validateStack = (stack, unordered) => {
   }
 
   const rows = async (store) =>
-    store.examples.order('ix').toArray().then((arr) => arr)
+    store.examples.order('ix').toArray().then((arr) => arr.map(Example.type.fromSql))
 
   it('can be applied', async () => {
     const store = await memStore()
@@ -122,7 +122,7 @@ describe('cru actions', () => {
   })
 
   describe('on a rebase', () => {
-    it('create.rebase() does nothing', async () => {
+    it('does nothing to a create', async () => {
       const store = await memStore()
       const original = { ix: '0', key: 'a' }
       const pending = await create.build(store, [original])
@@ -131,7 +131,7 @@ describe('cru actions', () => {
         .to.deep.equal([original])
     })
 
-    it('update.rebase() changes diff as needed', async () => {
+    it('changes update diff as needed', async () => {
       const store = await memStore()
       const original = { ix: '0', key: 'a' }
       const apply = (a) => a.apply(store)

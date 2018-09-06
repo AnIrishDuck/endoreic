@@ -1,12 +1,12 @@
 import * as cru from '../../lib/cru'
 import Model from '../../lib/Model'
-import { isType } from '../../lib/validate'
+import * as types from '../../lib/types'
 
 export default class Group extends Model {
   static kind = 'groups'
-  static prepare = Model.prepare(Group)
-  static validate = Model.validate(Group, {
-    name: isType('string'),
+
+  static type = types.Fields({
+    name: types.String
   })
   static actions = cru.actions(Group)
 

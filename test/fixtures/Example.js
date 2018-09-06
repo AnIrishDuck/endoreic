@@ -1,11 +1,11 @@
 import Model from '../../lib/Model'
-import { isIn, isType, optional } from '../../lib/validate'
+import * as types from '../../lib/types'
 
 export default class Example extends Model {
   static kind = 'examples'
-  static prepare = Model.prepare(Example)
-  static validate = Model.validate(Example, {
-    ix: optional(isType('string')),
-    key: isIn(['a', 'b'])
+
+  static type = types.Fields({
+    ix: types.Option(types.String),
+    key: types.Enumeration(['a', 'b'])
   })
 }

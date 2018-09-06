@@ -56,11 +56,11 @@ describe('Store', () => {
     expect(updated.length).to.equal(1)
 
     const data = await password.fetch()
-    const parentData = await data.parent.fetch()
+    const parentReloaded = await data.parent.fetch()
     expect(data.name).to.equal('Updated Example')
-    expect(parentData.name).to.equal('All Passwords')
+    expect(parentReloaded.name).to.equal('All Passwords')
 
-    const [ other ] = await parent.passwords().fetch()
+    const [ other ] = await parentReloaded.passwords().fetch()
     expect(other.id).to.equal(password.id)
 
     await testRewindReplay(keymaster)
