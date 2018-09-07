@@ -5,10 +5,6 @@ import Store from '../../lib/Store'
 export default class Keymaster extends Store {
   static shard = 'keymaster'
 
-  async bind () {
-    await super.store(Group)
-    await super.store(Password)
-  }
-
+  static models = [Group, Password]
   static create = Store.create(Keymaster)
 }
