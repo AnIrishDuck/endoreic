@@ -5,7 +5,7 @@ import * as types from '../../lib/types'
 export default class Password extends Model {
   static kind = 'passwords'
 
-  static type = types.Fields({
+  static type = types.Record({
     parent: types.Reference((store) => store.groups),
     name: types.String,
     password: types.String
