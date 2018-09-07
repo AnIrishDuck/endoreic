@@ -5,7 +5,7 @@ import * as types from '../../lib/types'
 export default class Group extends Model {
   static kind = 'groups'
 
-  static type = types.Record({
+  static type = types.Row({
     name: types.String
   })
   static actions = cru.actions(Group)
