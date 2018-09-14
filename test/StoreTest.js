@@ -44,6 +44,7 @@ describe('Store', () => {
     ])
     const rawPassword = {
       parent,
+      description: { some: 'json' },
       name: 'Example',
       password: 'toomanysecrets',
     }

@@ -8,6 +8,7 @@ export default class Password extends Model {
   static shape = types.Row({
     parent: types.Reference((store) => store.groups),
     name: types.String,
+    description: types.Option(types.Json),
     password: types.String
   })
 
