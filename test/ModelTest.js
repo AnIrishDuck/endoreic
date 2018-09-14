@@ -1,14 +1,31 @@
 import { expect } from 'chai'
-import { expectRejection } from './util'
-import Example from './fixtures/Example'
+import _ from 'lodash'
 
-describe.skip('Model', () => {
-  it('validates on creation', async () => {
-    const valid = await Example.create(null, { key: 'b' })
-    expect(valid.key).to.equal('b')
-    await expectRejection(
-      Example.create(null, { key: 'c' }),
-      `Invalid examples entry: {"key":"invalid key: 'c'"}`
-    )
+import { memoryStore } from './fixtures'
+import Keymaster from './fixtures/Keymaster'
+
+describe('Model', () => {
+  it('has a debugging .toJson method', async () => {
+    const keymaster = await memoryStore(Keymaster)()
+    const [ parent ] = await keymaster.groups.create([
+      { name: 'All Passwords' }
+    ])
+    const rawPassword = {
+      parent,
+      description: { some: 'json' },
+      name: 'Example',
+      password: 'toomanysecrets',
+    }
+    const [ password ] = await keymaster.passwords.create([rawPassword])
+
+    const model = await password.fetch()
+    expect(_.omit(model.toJson(), ['id'])).to.deep.equal({
+      description: {
+        "some": "json"
+      },
+      "name": "Example",
+      "parent": parent.id,
+      "password": "toomanysecrets"
+    })
   })
 })
