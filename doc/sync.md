@@ -1,3 +1,19 @@
+# Overview
+
+Broadly speaking, this library sacrifices the "C" in CAP. When offline, node
+state can diverge. This is what enables offline reads / writes on mobile
+clients. Once fully reconnected, the system will always converge to a
+fully consistent state.
+
+This consistency model is sufficient for the data this library was designed to
+store (simple CRUD-ish data without the D). Simple register creations and
+updates are easy to re-linearize in an (usually) unsurprising fashion.
+
+**This model is not a good fit for applications that require complex atomic
+commits**. This library is adaptable to those circumstances (See [Conflict-free
+Operation]). However, that adaptation would require further development of a
+complementary mode that sacrifices the "A" in CAP.
+
 # Synchronization
 
 This library is intended for use with mobile clients. These clients must still
@@ -11,6 +27,8 @@ employ a last-write-wins policy on updates. Deletes can be simulated using a
 ["tombstone"] similar to other distributed systems like Cassandra.
 
 The normal operation of synchronization on each client looks like this:
+
+Here's an overview of the synchronization process:
 
 - a batch of new actions is fetched
 - if no actions were fetched, we attempt to persist a batch of pending actions
