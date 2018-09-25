@@ -17,7 +17,7 @@ describe('Store', () => {
       store.stream.reverse(pending).reduce(Array.concat, [])
     const stack = [...(await reversed(true)), ...(await reversed(false))]
     const states = await Promise.reduce(stack, async (states, blob) => {
-      const act = await store.parse(blob)
+      const act = await store.decrypt(blob)
       const prior = await fullState(store)
       await act.remove(store)
       return [[act, prior], ...states]
