@@ -1,9 +1,11 @@
 {
-  "presets": ["es2015"],
+  "presets": ["@babel/preset-env"],
   "plugins": [
-    "syntax-async-functions",
-    "transform-class-properties",
-    "transform-regenerator",
-    "transform-object-rest-spread"
+    [
+      "@babel/plugin-transform-runtime",
+      { "regenerator": true },
+    ],
+    "@babel/plugin-transform-regenerator",
+    "@babel/plugin-proposal-class-properties"
   ]
 }

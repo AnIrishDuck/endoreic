@@ -18,7 +18,7 @@ describe('StreamCache', () => {
   const blobs = (strings) => strings.map((s) => new Buffer(s))
 
   const collect = (s) =>
-    s.map((b) => [b.toString()]).reduce(Array.concat, [])
+    s.map((b) => [b.toString()]).reduce((a, c) => [...a, ...c], [])
 
   const values = async (stream, pending) => {
     return stream.head(pending, await stream.size(pending)).then(strings)

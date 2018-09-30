@@ -14,7 +14,7 @@ describe('Store', () => {
 
   const testRewindReplay = async (store) => {
     const reversed = (pending) =>
-      store.stream.reverse(pending).reduce(Array.concat, [])
+      store.stream.reverse(pending).reduce((a, c) => [...a, c], [])
     const stack = [...(await reversed(true)), ...(await reversed(false))]
     const states = await Promise.reduce(stack, async (states, blob) => {
       const act = await store.decrypt(blob)
@@ -138,7 +138,7 @@ describe('Store', () => {
       const k2 = await master(server)
 
       const collect = (stream) =>
-        stream.map((index) => [ index ]).reduce(Array.concat, [])
+        stream.map((index) => [ index ]).reduce((a, c) => [...a, ...c], [])
       const changes1 = collect(k1.changes().take(3))
       const changes2 = collect(k2.changes().take(2))
 
