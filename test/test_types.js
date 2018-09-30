@@ -17,6 +17,7 @@ const collection = {
   }
 }
 const Complex = types.Record({
+  birthday: types.Date,
   simple: types.String,
   tf: types.Boolean,
   uuid: types.UUID,
@@ -37,6 +38,7 @@ const Complex = types.Record({
 })
 
 const example = {
+  birthday: '1989-05-01T00:00:00-04:00',
   simple: 'always money in the banana stand',
   tf: false,
   uuid: uuid.v4(),
@@ -51,6 +53,7 @@ const example = {
 describe('a complex type', () => {
   it('can be serialized to sql', () => {
     expect(Complex.toSql(example)).to.deep.equal({
+      birthday: '1989-05-01T00:00:00-04:00',
       simple: 'always money in the banana stand',
       tf: 'false',
       uuid: example.uuid,
