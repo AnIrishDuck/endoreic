@@ -67,6 +67,12 @@ describe('Store', () => {
     await testRewindReplay(keymaster)
   })
 
+  it('converts "empty" operations to no-ops', async () => {
+    const keymaster = await master()
+    expect(await keymaster.groups.create([])).to.deep.equal([])
+    expect(await keymaster.groups.update([])).to.deep.equal([])
+  })
+
   it('persists actions in the stream cache', async () => {
     const keymaster = await master(null)
 
