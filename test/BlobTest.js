@@ -24,9 +24,7 @@ describe('Blob', () => {
 
   it('can be read and written to locally', async () => {
     const blob = await Blob.create(db(), null, ring, blobby)
-    console.log('created')
     const back = await blob.read()
-    console.log('read', back.length)
     largeCompare(blobby, back)
   })
 
