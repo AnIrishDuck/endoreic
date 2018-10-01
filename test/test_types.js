@@ -1,5 +1,7 @@
 import { expect } from 'chai'
 import _ from 'lodash'
+import moment from 'moment'
+import 'moment-timezone'
 import uuid from 'uuid'
 
 import * as types from '../lib/types'
@@ -49,6 +51,8 @@ const example = {
   op2: null,
   l: [ [ { nested: true, ref: 'a' }, { nested: false, ref: 'b' } ] ]
 }
+
+moment.tz.setDefault("America/New_York")
 
 describe('a complex type', () => {
   it('can be serialized to sql', () => {
