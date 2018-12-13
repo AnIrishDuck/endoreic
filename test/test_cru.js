@@ -14,6 +14,7 @@ const { create, update } = actions(Example)
 const memStore = async () => {
   const db = new sqlite3.Database(':memory:')
   const table = new Table(db, Example.kind)
+  await table.ready
   return {
     table: (Model) => {
       expect(Model.kind).to.equal(Example.kind)
@@ -119,6 +120,20 @@ describe('cru actions', () => {
     }, raw)
 
     validateStack(acts, final)
+  })
+
+  describe('updates', () => {
+    it('errors if the specified id does not exist', async () => {
+      const store = await memStore()
+      const invalid = await update.build(store, {
+        ids: [undefined],
+        update: { key: 'a' }
+      })
+
+      expect(await invalid.errors(store)).to.deep.equal([
+        { id: 'no row with id: undefined' }
+      ])
+    })
   })
 
   describe('on a rebase', () => {
