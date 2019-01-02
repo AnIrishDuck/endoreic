@@ -1,6 +1,6 @@
 {
   "name": "@talaria/endoreic",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "a data encryption, caching, synchronization, and persistence library",
   "main": "dist/exports",
   "directories": {
@@ -46,7 +46,7 @@
     "bluebird": "^3.5.1",
     "eventemitter3": "^3.1.0",
     "immutable": "^3.8.2",
-    "iter-tools": "^5.0.4",
+    "iter-tools": "^6.1.7",
     "lodash": "^4.17.4",
     "moment": "^2.22.2",
     "most": "^1.7.3",
