@@ -18,7 +18,7 @@ describe('Keyring', () => {
 
     const ciphertext = read.encrypt(new Buffer('too many secrets'))
 
-    const other = await (new Keyring(server, ring.id)).fetch(user)
+    const other = await Keyring.lookup(server, ring.id, user)
     expect(other.read.decrypt(ciphertext).toString())
       .to.equal('too many secrets')
   })
@@ -33,7 +33,7 @@ describe('Keyring', () => {
 
     const ciphertext = guest.encrypt(write.publicKey(), new Buffer('too many secrets'))
 
-    const other = await (new Keyring(server, ring.id)).fetch(guest)
+    const other = await Keyring.lookup(server, ring.id, guest)
     expect(other.write.decrypt(guest.publicKey(), ciphertext).toString())
       .to.equal('too many secrets')
   })
