@@ -14,25 +14,35 @@ chai.use(chaiAsPromised)
 describe('User', () => {
   const db = () => new sqlite3.Database(':memory:')
 
+  const initUser = async (server) =>
+    User.initialize(db(), server, await login(), { putKey: false })
+
   it('creates new default state', async () => {
     const server = new Server()
-    const user = new User(db(), server, await login())
-    const data = await user.getStore(Keymaster)
+    const user = await initUser(server)
+
+    const app = await user.get(Keymaster)
+    const data = await app.create('Random Keys')
     expect(await data.index()).to.deep.equal([0, 0])
   })
 
   it('loads existing state when already present', async () => {
     const server = new Server()
-    const user = new User(db(), server, await login())
-    const keymaster = await user.getStore(Keymaster)
+    const user = await initUser(server)
+    const app = await user.get(Keymaster)
+    const keymaster = await app.create('Random Keys')
 
     const [ parent ] = await keymaster.groups.create([
       { name: 'All Passwords' }
     ])
+    await user.sync()
     await keymaster.sync()
 
-    const reloaded = await new User(db(), server, await login())
-    const recreated = await reloaded.getStore(Keymaster)
+    const reloaded = await User.load(db(), server, await login())
+    await reloaded.sync()
+    const reloadedApp = await reloaded.get(Keymaster)
+    const [ store ] = await reloadedApp.list()
+    const recreated = await reloadedApp.get(store.storeId)
     await recreated.sync()
     const reparent = await recreated.groups.reference(parent.id).fetch()
     expect(reparent.name).to.equal('All Passwords')
@@ -62,45 +72,14 @@ describe('User', () => {
     BoxKeyPair.rounds = 2
     const server = new Server()
     const email = 'testing@test.com'
+    const password = 'too many secrets'
     await server.initUser(email)
 
-    await User.create(server, email, 'too many secrets')
-
-    const newKey = await BoxKeyPair.fromLogin(email, 'too many secrets')
-    expect(server.keyPairs[email]).to.equal(newKey.publicKey())
-
-    BoxKeyPair.rounds = prior
-  })
-
-  it('can use the same password multiple times after a reset', async () => {
-    const prior = BoxKeyPair.rounds
-    BoxKeyPair.rounds = 2
-
-    const email = 'testing@test.com'
-    const password = 'too many secrets'
     const login = await User.login(email, password)
-    const init = async () => {
-      const user = new User(db(), server, login)
-      await user.getStore(Keymaster)
-    }
+    await User.initialize(db(), server, login)
 
-    const server = new Server()
-    const empty = await BoxKeyPair.fromLogin(email, '')
-
-    server.keyPairs[email] = empty.publicKey()
-
-    await User.create(server, email, password)
-    await init()
-
-    await server.removeEntry(login.publicKey, Keymaster.shard, 0)
-
-    server.keyPairs[email] = empty.publicKey()
-
-    await User.create(server, email, password)
-    await init()
-
-    expect(server.keyPairs[email]).to.equal(login.publicKey)
-    expect(await server.getIndex(login.publicKey, Keymaster.shard)).to.equal(2)
+    const newKey = await BoxKeyPair.fromLogin(email, password)
+    expect(server.keyPairs[email]).to.equal(newKey.publicKey())
 
     BoxKeyPair.rounds = prior
   })
