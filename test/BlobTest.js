@@ -30,6 +30,8 @@ describe('Blob', () => {
 
   it('can be written, synced and read somewhere else', async () => {
     const server = new Server()
+    server.touch(ring.write, 'actions')
+
     const remote = await Blob.create(db(), server, ring, blobby)
     const local = await Blob.from(db(), server, ring)
 

@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import sqlite3 from 'sqlite3'
 import { seedFromLogin } from '../lib/crypto'
 import User from '../lib/User'
@@ -23,6 +22,9 @@ export const db = () => new sqlite3.Database(':memory:')
 export const memoryStore = (Store) => {
   const ring = keyring()
 
-  return (server) =>
-    Store.create(db(), _.isUndefined(server) ? new Server() : server, ring)
+  return async (_server) => {
+    const server = _server || new Server()
+    server.touch(ring.write, 'actions')
+    return Store.create(db(), server, ring)
+  }
 }

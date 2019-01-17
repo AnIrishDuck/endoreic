@@ -1,12 +1,10 @@
 /* eslint-env node, mocha */
 
 import assert from 'assert'
-import axios from 'axios'
 import { expect } from 'chai'
-import sinon from 'sinon'
 
-import Server, { authToken, authTokens, checkToken } from '../lib/Server'
-import { BoxKeyPair, SecretKey } from '../lib/crypto'
+import Server, { authToken, checkToken } from '../lib/Server'
+import { BoxKeyPair, SecretKey, SignKeyPair } from '../lib/crypto'
 
 let k = new SecretKey()
 let plaintext = new Buffer('super secret'.repeat(4))
@@ -68,106 +66,13 @@ describe.skip('Server', () => {
   })
 })
 
-const testCache = (entries) => ({
-  get: (id) => Promise.resolve(entries[id]),
-  put: (id, value) => {
-    entries[id] = value
-    return Promise.resolve(value)
-  },
-})
-
 describe('Server crypto', () => {
-  it('can verify writes', () => {
-    const user = new BoxKeyPair()
-    const resource = new BoxKeyPair()
+  it('can create and verify tokens', () => {
+    const auth = new SignKeyPair()
+    const other = new SignKeyPair()
 
-    const { auth, owner, ownerAuth } = authTokens(resource, user)
-    expect(checkToken(resource.publicKey(), auth)).to.be.true
-    expect(checkToken(owner, ownerAuth)).to.be.true
-  })
-})
-
-describe('Server cache', () => {
-  const kp = new BoxKeyPair()
-  const kid = kp.publicKey()
-  const index = 3
-
-  let testEntry = `${url}/v1/${kid}/partition/${index}`
-  it('is consulted first', async () => {
-    const stub = sinon.stub(axios, 'get')
-    stub.throws()
-    try {
-      const cache = testCache({
-        [testEntry]: ciphertext
-      })
-      const s = new Server(url, { cache })
-      const entry = await s.getEntry(kid, 'partition', index)
-      const decrypted = k.decrypt(entry).toString()
-      expect(decrypted).to.equal(plaintext.toString())
-    } finally {
-      stub.restore()
-    }
-  })
-
-  it('stores index, and uses stored value when offline', async () => {
-    let stub = sinon.stub(axios, 'get')
-    stub.resolves({ data: { index: 3 } })
-    try {
-      const store = {}
-      const cache = testCache(store)
-      const s = new Server(url, { cache })
-      let index = await s.getIndex(kid, 'partition')
-      expect(index).to.equal(3)
-
-      stub.throws()
-      const o = new Server(url, { cache, offline: true })
-      index = await o.getIndex(kid, 'partition')
-      expect(index).to.equal(3)
-    } finally {
-      stub.restore()
-    }
-  })
-
-  it('stores previously fetched values', async () => {
-    const stub = sinon.stub(axios, 'get')
-    stub.resolves({ data: ciphertext })
-    try {
-      const cache = testCache({})
-      const s = new Server(url, { cache })
-
-      let entry = await s.getEntry(kid, 'partition', index)
-      let decrypted = k.decrypt(entry).toString()
-      expect(decrypted).to.equal(plaintext.toString())
-      stub.throws()
-
-      entry = await s.getEntry(kid, 'partition', index)
-      decrypted = k.decrypt(entry).toString()
-      expect(decrypted).to.equal(plaintext.toString())
-    } finally {
-      stub.restore()
-    }
-  })
-
-  it('stores previously put values', async () => {
-    const post = sinon.stub(axios, 'post')
-    post.resolves()
-    const get = sinon.stub(axios, 'get')
-    get.throws()
-
-    const cache = testCache({})
-    const s = new Server(url, { cache })
-    const index = sinon.stub(s, 'getIndex').resolves()
-
-    try {
-      await s.putEntry(kid, 'partition', index, ciphertext, authToken(kp))
-
-      const entry = await s.getEntry(kid, 'partition', index)
-      const decrypted = k.decrypt(entry).toString()
-      expect(decrypted).to.equal(plaintext.toString())
-    } finally {
-      index.restore()
-      post.restore()
-      get.restore()
-    }
+    const token = authToken(auth)
+    expect(checkToken(auth.publicKey(), token)).to.be.true
+    expect(checkToken(other.publicKey(), token)).to.be.false
   })
 })

@@ -4,7 +4,7 @@ import chaiAsPromised from 'chai-as-promised'
 import sqlite3 from 'sqlite3'
 
 import User from '../lib/User'
-import { seedFromLogin, BoxKeyPair } from '../lib/crypto'
+import { seedFromLogin } from '../lib/crypto'
 import { Server } from '../lib/fakes'
 import Keymaster from './fixtures/Keymaster'
 import { login } from './fixtures'
@@ -48,26 +48,7 @@ describe('User', () => {
     expect(reparent.name).to.equal('All Passwords')
   })
 
-  it('can tell when a user is new', async () => {
-    const prior = seedFromLogin.rounds
-    seedFromLogin.rounds = 2
-    const server = new Server()
-    const newEmail = 'testing@test.com'
-    const newKey = await BoxKeyPair.fromLogin(newEmail, '')
-
-    const oldEmail = 'present@test.com'
-    const oldKey = await BoxKeyPair.fromLogin(oldEmail, 'super duper secret')
-
-    server.keyPairs[newEmail] = newKey.publicKey()
-    server.keyPairs[oldEmail] = oldKey.publicKey()
-
-    await expect(User.firstLogin(server, newEmail)).to.eventually.equal(true)
-    await expect(User.firstLogin(server, oldEmail)).to.eventually.equal(false)
-
-    seedFromLogin.rounds = prior
-  })
-
-  it('can change keys for new users', async () => {
+  it('can create key for new users', async () => {
     const prior = seedFromLogin.rounds
     seedFromLogin.rounds = 2
     const server = new Server()
@@ -78,8 +59,8 @@ describe('User', () => {
     const login = await User.login(email, password)
     await User.initialize(db(), server, login)
 
-    const newKey = await BoxKeyPair.fromLogin(email, password)
-    expect(server.keyPairs[email]).to.equal(newKey.publicKey())
+    const newKey = await User.login(email, password)
+    expect(server.keyPairs[email].seed()).to.equal(newKey.key)
 
     seedFromLogin.rounds = prior
   })
