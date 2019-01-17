@@ -4,7 +4,7 @@ import chaiAsPromised from 'chai-as-promised'
 import sqlite3 from 'sqlite3'
 
 import User from '../lib/User'
-import { BoxKeyPair } from '../lib/crypto'
+import { seedFromLogin, BoxKeyPair } from '../lib/crypto'
 import { Server } from '../lib/fakes'
 import Keymaster from './fixtures/Keymaster'
 import { login } from './fixtures'
@@ -49,8 +49,8 @@ describe('User', () => {
   })
 
   it('can tell when a user is new', async () => {
-    const prior = BoxKeyPair.rounds
-    BoxKeyPair.rounds = 2
+    const prior = seedFromLogin.rounds
+    seedFromLogin.rounds = 2
     const server = new Server()
     const newEmail = 'testing@test.com'
     const newKey = await BoxKeyPair.fromLogin(newEmail, '')
@@ -64,12 +64,12 @@ describe('User', () => {
     await expect(User.firstLogin(server, newEmail)).to.eventually.equal(true)
     await expect(User.firstLogin(server, oldEmail)).to.eventually.equal(false)
 
-    BoxKeyPair.rounds = prior
+    seedFromLogin.rounds = prior
   })
 
   it('can change keys for new users', async () => {
-    const prior = BoxKeyPair.rounds
-    BoxKeyPair.rounds = 2
+    const prior = seedFromLogin.rounds
+    seedFromLogin.rounds = 2
     const server = new Server()
     const email = 'testing@test.com'
     const password = 'too many secrets'
@@ -81,6 +81,6 @@ describe('User', () => {
     const newKey = await BoxKeyPair.fromLogin(email, password)
     expect(server.keyPairs[email]).to.equal(newKey.publicKey())
 
-    BoxKeyPair.rounds = prior
+    seedFromLogin.rounds = prior
   })
 })

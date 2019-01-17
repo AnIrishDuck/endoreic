@@ -6,7 +6,14 @@ import _ from 'lodash'
 import sinon from 'sinon'
 import { expect } from 'chai'
 import nacl from 'tweetnacl'
-import { BoxKeyPair, SecretKey, encode } from '../lib/crypto'
+import {
+  BoxKeyPair,
+  SecretKey,
+  SignKeyPair,
+  VerifyKey,
+  encode,
+  seedFromLogin
+} from '../lib/crypto'
 
 let pairs = {}
 const noRepeats = (old) => (data, nonce, pk, sk) => {
@@ -48,7 +55,7 @@ describe('BoxKeyPair', () => {
     const email = 'bob@test.com'
     const password = 'too many secrets'
     const prior = BoxKeyPair.rounds
-    BoxKeyPair.rounds = 2
+    seedFromLogin.rounds = 2
     const alice = await BoxKeyPair.fromLogin('alice@test.com', password)
     const bob = await BoxKeyPair.fromLogin(email, password)
 
@@ -59,18 +66,54 @@ describe('BoxKeyPair', () => {
     const recreated = await BoxKeyPair.fromLogin(email, password)
     const plain = recreated.decrypt(alice.publicKey(), cipher)
     expect(plain.toString()).to.equal(message.toString())
-    BoxKeyPair.rounds = prior
+    seedFromLogin.rounds = prior
   })
 
   it('can derive a key from a bip39 passphrase', async () => {
     const password = bip39.generateMnemonic()
     const prior = BoxKeyPair.rounds
-    BoxKeyPair.rounds = 2
+    seedFromLogin.rounds = 2
     await BoxKeyPair.fromLogin('alice@test.com', password)
-    BoxKeyPair.rounds = prior
+    seedFromLogin.rounds = prior
   })
 })
 
+describe('SignKeyPair', () => {
+  const email = 'alice@test.com'
+
+  it('can be used to seal messages and unseal remotely', async () => {
+    const password = bip39.generateMnemonic()
+    const prior = BoxKeyPair.rounds
+    seedFromLogin.rounds = 2
+    const seed = await seedFromLogin({ email, password })
+    seedFromLogin.rounds = prior
+
+    const key = new SignKeyPair(seed)
+    const message = new Buffer('pop secret')
+    const sealed = key.seal(message)
+    const remote = new VerifyKey(key.publicKey())
+    const unsealed = remote.open(sealed)
+    expect(unsealed.toString()).to.equal(message.toString())
+    expect(key.open(sealed).toString()).to.equal(message.toString())
+  })
+
+  it('can be stored locally', async () => {
+    const key = new SignKeyPair()
+    const message = new Buffer('pop secret')
+    const reloaded = new SignKeyPair(key.seed())
+    const sealed = reloaded.seal(message)
+    expect(reloaded.open(sealed).toString()).to.equal(message.toString())
+  })
+
+  it('cannot be tampered with', async () => {
+    const key = new SignKeyPair()
+    const message = new Buffer('pop secret')
+    const sealed = key.seal(message)
+    const offset = 5
+    sealed.writeInt8((sealed.readInt8(offset) + 1) % 255, offset)
+    expect(() => key.open(sealed).toString()).to.throw('Invalid signature')
+  })
+})
 
 describe('SecretKey', () => {
   it('can encrypt / decrypt messages', () => {
