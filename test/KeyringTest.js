@@ -16,6 +16,8 @@ describe('Keyring', () => {
 
   it('can be created and includes creator key', async () => {
     const server = new Server()
+    server.touchUser(user)
+
     const ring = await Keyring.create(server, user)
     const { read } = await ring.fetch(user.read)
 
@@ -28,6 +30,8 @@ describe('Keyring', () => {
 
   it('can include additional guest keys', async () => {
     const server = new Server()
+    server.touchUser(user)
+
     const ring = await Keyring.create(server, user)
     const { read } = await ring.fetch(user.read)
 

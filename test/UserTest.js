@@ -14,8 +14,11 @@ chai.use(chaiAsPromised)
 describe('User', () => {
   const db = () => new sqlite3.Database(':memory:')
 
-  const initUser = async (server) =>
-    User.initialize(db(), server, await login(), { putKey: false })
+  const initUser = async (server) => {
+    const loginData = await login()
+    server.touchLogin(loginData)
+    return User.initialize(db(), server, loginData, { putKey: false })
+  }
 
   it('creates new default state', async () => {
     const server = new Server()
